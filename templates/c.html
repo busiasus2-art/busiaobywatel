@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Custom Data</title>
+</head>
+<body>
+
+<h3>Enter your data</h3>
+
+<label>First Name: <input type="text" id="name"></label><br>
+<label>Last Name: <input type="text" id="surname"></label><br>
+<label>Birth Date: <input type="date" id="birthdate"></label><br>
+<label>PESEL: <input type="text" id="pesel"></label><br>
+<label>Image URL: <input type="text" id="url"></label><br>
+
+<button onclick="submitData()">Submit</button>
+
+<script>
+async function submitData() {
+    const data = {
+        name: document.getElementById("name").value,
+        surname: document.getElementById("surname").value,
+        birthdate: document.getElementById("birthdate").value,
+        pesel: document.getElementById("pesel").value,
+        url: document.getElementById("url").value
+    };
+
+    const res = await fetch("/submit_c", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    if (result.success) {
+        alert("Saved successfully!");
+        window.location.href = "/1.html";
+    } else {
+        alert(result.message);
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>mObywatel</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <style>
+
+        body::-webkit-scrollbar {
+             display: none;
+        }
+        body {
+            margin: 0;
+            background: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: white;
+            display: flex;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            flex-direction: column;
+            align-items: center;
+            min-height: 200vh; /* Make page scrollable */
+            overflow-x: hidden; /* Block horizontal scroll */
+        }
+
+        /* Верхняя панель */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            height: 135px;
+            gap: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 33;
+            background: #000;
+        }
+
+
+        .arrow {
+            position: absolute;
+            left: 5%;
+            top: 20px;
+            width: 26px;
+            height: 26px;
+        }
+
+        .title {
+            font-size: 14px;
+            position: absolute;
+            left: 15%;
+            top: 25px;
+            color: #ffffff;
+            opacity: 0.9;
+        }
+
+        /* Центральный блок */
+        .card-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .card {
+            width: 360px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative; /* needed for absolute children like .time */
+            padding-top: 180px; /* space above image so it sits below pill */
+        }
+
+        /* Контейнер для изображения с оверлеями */
+        .image-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+            /* Верхняя картинка */
+            .image-container img.main-image {
+                width: 100%;
+                display: block;
+                border-top-left-radius: 18px;
+                border-top-right-radius: 18px;
+            }
+
+        .overlay {
+            position: absolute;
+        }
+
+        /* Примеры позиций и размеров оверлеев; легко изменить в стилях ниже */
+        .overlay1 {
+            top: 18px;
+            left: 18px;
+            width: 35%;
+            height: 37%;
+            border-top-left-radius: 9px;
+            border-top-right-radius: 9px;
+            border-bottom-left-radius: 9px;
+            border-bottom-right-radius: 9px;
+        }
+
+        .overlay2 {
+            top: 50%;
+            left: 12%;
+            transform: translate(-50%, -50%);
+            width: 15%;
+            height: auto;
+        }
+
+        .overlay3 {
+            top: 63%;
+            left: 9%;
+            transform: translate(-50%, -50%);
+            width: 8%;
+            height: auto;
+        }
+
+        /* Нижний черный фрейм */
+        .bottom-frame {
+            background: #0c0c0c;
+            height: 80px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border-bottom-left-radius: 12px; /* Убрано скругление снизу */
+            border-bottom-right-radius: 12px; /* Убрано скругление снизу */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 5; /* Above image */
+        }
+
+        /* Зеленая галочка */
+        .check {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            margin-bottom: 0; /* Remove bottom margin since row */
+            margin-right: 30px;
+            left: 5%;
+            object-fit: contain;
+        }
+
+        .ok-text {
+            position: absolute;
+            font-size: 16px;
+            left: 18%;
+            color: #1cdb2a;
+            opacity: 0.9;
+        }
+
+        /* Контейнер сегмента */
+        .segmented-control {
+            background-color: #2c2c2e;
+            border-radius: 40px;
+            padding: 5px;
+            display: inline-flex;
+            width: 420px;
+            max-width: calc(100% - 40px);
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .segment {
+            flex: 1;
+            text-align: center;
+            padding: 14px 0;
+            border-radius: 35px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+            .segment.active {
+                background-color: #000;
+                color: #3ea6ff;
+            }
+
+            .segment.inactive {
+                background-color: #2c2c2e;
+                color: #ffffff;
+            }
+
+        /* Make time hide on scroll */
+        .time {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 500;
+            position: relative; /* relative to .image-container */
+            top: 155px;
+            left: 0%;
+            z-index: 3;
+        }
+
+        /* Labels */
+        .labels-wrapper {
+            position: absolute; /* inside image-container */
+            top: 15px;
+            left: 90%;
+            transform: translateX(-50%);
+            width: 90%; /* adjust to image width */
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .labels {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .label-pair {
+            margin-bottom: 9px;
+        }
+
+        .big-label {
+            font-size: 18px;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .small-label {
+            font-size: 14px;
+            color: #0c0c0c;
+            margin-top: 2px;
+        }
+
+        /* Custom label */
+        .custom-label {
+            position: absolute;
+            top: 61%;
+            left: 27%;
+            transform: translate(-50%, -50%);
+            color: #000000;
+            font-size: 14px;
+            font-weight: 400;
+            white-space: pre-line;
+            text-align: left;
+            z-index: 15;
+        }
+
+        /* Bottom bar */
+        .bottom-bar {
+            width: 100%;
+            background: #000000;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 20;
+            margin-top: 15px;
+        }
+
+        .button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            white-space: pre-line;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .sbutton {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            white-space: pre-line;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .rbutton {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            white-space: pre-line;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1c1c1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+            .icon img {
+                width: 24px;
+                height: 24px;
+            }
+
+        .ricon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1c1c1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+            .ricon img {
+                width: 18px;
+                height: 24px;
+            }
+
+        .sicon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1c1c1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+            .sicon img {
+                width: 18px;
+                height: 22px;
+            }
+        /* New data section under bottom frame */
+        .data-section {
+            margin-top: 20px;
+            font-size: 20px;
+            color: white;
+            text-align: left;
+        }
+
+        .gray-frame {
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            margin: 10px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+        }
+
+        .small-bright {
+            font-size: 14px;
+            text-align: left;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .big-white {
+            font-size: 15px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .divider-line {
+            border: none;
+            border-top: 1px solid #666;
+            width: calc(100% - 10px);
+            margin: 5px 0;
+            margin: 5px 0;
+        }
+
+        .gray-text {
+            font-size: 12px;
+            color: #808080;
+        }
+
+        /* New similar frame */
+        .similar-frame {
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            margin: 10px auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .small-text {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .bigger-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .rounded-button {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #073f73;
+            color: #3c95e8;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        /* Cyan frame */
+        .cyan-frame {
+            background: #73a5e2; /* Cyan */
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            margin: 10px auto;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            position: relative;
+        }
+
+        .info-logo {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            left: 15px;
+            top: 20px;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .big-info {
+            font-size: 20px;
+            position: relative;
+            font-weight: bold;
+            left: 30px;
+            top: -2px;
+            color: white; /* Assuming dark text on cyan */
+            margin-bottom: 10px;
+        }
+
+        .long-small-text {
+            position: relative;
+            font-weight: 600;
+            top:-20px;
+            left: 30px;
+            font-size: 13px;
+            white-space: pre-line;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .blue-small-text {
+            font-size: 20px;
+            position: relative;
+            font-weight: 700;
+            left: 30px;
+            font-size: 14px;
+            color: #126fc4;
+            top: -20px;
+        }
+    </style>
+    <script defer>
+		const ultrapath = '{{ url_for('static', filename='/') }}'
+        function updateTime() {
+            const timeEl = document.getElementById('time');
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0'); // month is 0-based
+            const year = now.getFullYear();
+            try {
+                timeEl.textContent = `Czas: ${hours}:${minutes}:${seconds} ${day}.${month}.${year}`;
+            } catch (e) {
+                console.error('Error updating time:', e);
+            }
+        }
+
+        // Update every second
+        setInterval(updateTime, 1000);
+        updateTime(); // initial call
+
+        // Cycle overlay2 images
+        document.addEventListener('DOMContentLoaded', function () {
+			const overlay2 = document.querySelector('.overlay2');
+			console.log("Overlay:", overlay2); // должно быть <img>
+
+			let frames = [];
+			for (let i = 0; i <= 49; i++) {
+				frames.push(`/static/flags/flag_ua_${i}.png`); // путь к статике
+			}
+
+			let index = 0;
+			setInterval(() => {
+				overlay2.src = frames[index]; // просто JS-путь, без url_for
+				index = (index + 1) % frames.length;
+			}, 1000 / 15); // 15 FPS
+		});
+    </script>
+</head>
+<body>
+
+    <div class="top-bar">
+        <img src="{{ url_for('static', filename='a.png') }}" class="arrow" alt="back">
+        <div class="title">Diia.pl</div>
+        <div class="segmented-control">
+            <div class="segment active">Twoja</div>
+            <div class="segment inactive">Twoich dzieci</div>
+        </div>
+    </div>
+
+    <div class="time" id="time">
+        Czas: 22:27:33 12.02.2026
+    </div>
+
+    <!-- Центр -->
+    <div class="card">
+        <div class="image-container">
+            <img src="{{ url_for('static', filename='uabg.png') }}" class="main-image" alt="main">
+			{% if data.url %}
+			<img src="{{ data.url }}" alt="User Image" style="max-width:200px;" class="overlay overlay1" alt="overlay1">
+			{% endif %}
+            <img src="{{ url_for('static', filename='flags/flag_ua_1.png') }}" class="overlay overlay2" alt="overlay2">
+            <img src="{{ url_for('static', filename='e4.png') }}" class="overlay overlay3" alt="overlay3">
+
+            <!-- Labels on image -->
+            <div class="labels-wrapper">
+                <div class="labels">
+					<div class="label-pair">
+						<div class="big-label">{{ data.name }}</div>
+						<div class="small-label">Imię (imiona)</div>
+					</div>
+					<div class="label-pair">
+						<div class="big-label">{{ data.surname }}</div>
+						<div class="small-label">Nazwisko</div>
+					</div>
+					<div class="label-pair">
+						<div class="big-label">{{ data.birthdate }}</div>
+						<div class="small-label">Data urodzenia</div>
+					</div>
+					<div class="label-pair">
+						<div class="big-label">{{ data.pesel }}</div>
+						<div class="small-label">Numer PESEL</div>
+					</div>
+				</div>
+            </div>
+            <div class="bottom-frame">
+                <img src="{{ url_for('static', filename='check.png') }}" class="check" alt="check">
+                <div class="ok-text">Dokument ważny</div>
+            </div>
+            <!-- New custom label -->
+            <div class="custom-label">
+                Rzeczpospolita
+                Polska
+            </div>
+        </div>
+        <!-- Bottom bar -->
+        <div class="bottom-bar">
+            <div class="button">
+                <div class="icon">
+                    <img src="{{ url_for('static', filename='test.png') }}" alt="refresh">
+                </div>
+                <div>
+                    Potwierdź
+                    swoje dane
+                </div>
+            </div>
+            <div class="button">
+                <div class="icon">
+                    <img src="{{ url_for('static', filename='search.png') }}" alt="search">
+                </div>
+                <div>
+                    Powiąż
+                    PESEL
+                </div>
+            </div>
+            <div class="sbutton">
+                <div class="sicon">
+                    <img src="{{ url_for('static', filename='shield.png') }}" alt="shield">
+                </div>
+                <div>
+                    Zastrzeż
+                    PESEL
+                </div>
+            </div>
+            <div class="rbutton">
+                <div class="ricon">
+                    <img src="{{ url_for('static', filename='trash.png') }}" alt="trash">
+                </div>
+                <div>
+                    Usuń
+                    dokument
+                </div>
+            </div>
+        </div>
+        <!-- New data section -->
+        <div class="data-section">Dodatkowe dane</div>
+        <div class="gray-frame">
+            <div class="small-bright">Kraj pochodzenia</div>
+            <div class="big-white">UKRAINA</div>
+            <hr class="divider-line">
+            <!--<div class="gray-text">Gray text data</div>-->
+            <div class="small-bright">Miejsce Urodzenia</div>
+            <div class="big-white">KIJÓW</div>
+            <hr class="divider-line">
+            <div class="small-bright">Obywatelstwo</div>
+            <div class="big-white">UKRAIŃSKIE</div>
+        </div>
+
+        <!-- New similar frame -->
+        <div class="similar-frame">
+            <div class="small-text">Ostatnia aktualizacja</div>
+            <div class="bigger-text">06.11.2025</div>
+            <div class="rounded-button">Aktualizuj</div>
+        </div>
+
+        <!-- Cyan frame -->
+        <div class="cyan-frame">
+            <img src="{{ url_for('static', filename='info.png') }}" class="info-logo" alt="info">
+            <div class="info-content">
+                <div class="big-info">Informacja</div>
+                <div class="long-small-text">
+                    Dokument wydany na podstawie ustawy z
+                    dnia 12 marca 2022 r. o pomocy
+                    obywatelom Ukrainy w związku z konfliktem
+                    zbrojnym na terytorium tego państwa (Dz.U.
+                    2023 poz. 103), pozwala na potwierdzenie
+                    tożsamości obywateli Ukrainy, których pobyt
+                    na terytorium Polski jest uznany za legalny.
+                </div>
+                <div class="blue-small-text">Więcej Informacji</div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
