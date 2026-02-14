@@ -3,12 +3,13 @@ import json
 from datetime import datetime, timedelta
 import base64
 import hashlib
+import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 ADMIN_ID = 1542340573
 DB = "database.db"
-TOKEN = "5371778560:AAHOKeESqlyJaHWyAWgzJ3RSOpIcjJSeXUo"
+TOKEN = os.environ.get("TOKEN")
 
 def connect():
     return sqlite3.connect(DB)
