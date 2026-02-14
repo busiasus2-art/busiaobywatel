@@ -21,11 +21,11 @@
 
     <script>
         let device_id = localStorage.getItem("device_id");
+
 		function generateUUID() {
 			if (crypto && crypto.randomUUID) {
 				return crypto.randomUUID();
 			} else {
-				// fallback: простой генератор UUID v4
 				return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 					const r = Math.random() * 16 | 0;
 					const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -33,29 +33,40 @@
 				});
 			}
 		}
-        if (!device_id) {
-            device_id = generateUUID();
-            localStorage.setItem("device_id", device_id);
-        }
-        document.getElementById("uuid").textContent = device_id;
 
-        const form = document.getElementById("loginForm");
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const pw = document.getElementById("password").value;
+		if (!device_id) {
+			device_id = generateUUID();
+			localStorage.setItem("device_id", device_id);
+		}
 
-            const res = await fetch("/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ device_id: device_id, password: pw })
-            });
+		document.getElementById("uuid").textContent = device_id;
+		document.cookie = "device_id=" + device_id + "; path=/";
 
-            const data = await res.json();
-            alert(data.message);
-        });
+		// Define the form BEFORE adding event listener
+		const form = document.getElementById("loginForm");
 
-        // для теста автозаполнить
-        document.getElementById("password").value = defaultPassword;
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+
+			const res = await fetch("/login", {
+				method: "POST",
+				headers: {"Content-Type": "application/json"},
+				body: JSON.stringify({
+					device_id: device_id,
+					password: document.getElementById("password").value
+				})
+			});
+
+			const data = await res.json();
+
+			if (data.success) {
+				// Use encodeURIComponent
+				const safeToken = encodeURIComponent(data.redirect.split('token=')[1]);
+				window.location.href = `/1.html?token=${safeToken}`;
+			} else {
+				alert(data.message);
+			}
+		});
     </script>
 </body>
 </html>

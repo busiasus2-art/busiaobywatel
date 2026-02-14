@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
 
     <style>
 
@@ -537,8 +537,8 @@
     <div class="card">
         <div class="image-container">
             <img src="{{ url_for('static', filename='uabg.png') }}" class="main-image" alt="main">
-			{% if data.url %}
-			<img src="{{ data.url }}" alt="User Image" style="max-width:200px;" class="overlay overlay1" alt="overlay1">
+			{% if data.photo_url %}
+			<img src="{{ data.photo_url }}" alt="User Image" style="max-width:200px;" class="overlay overlay1">
 			{% endif %}
             <img src="{{ url_for('static', filename='flags/flag_ua_1.png') }}" class="overlay overlay2" alt="overlay2">
             <img src="{{ url_for('static', filename='e4.png') }}" class="overlay overlay3" alt="overlay3">
