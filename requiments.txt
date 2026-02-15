@@ -1,4 +1,0 @@
-Flask==2.3.3
-python-telegram-bot==20.7
-pycryptodome==3.18.0
-gunicorn==21.2.0
